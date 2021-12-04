@@ -35,7 +35,7 @@ class MiniMaxCodemaster(Codemaster):
             self.bad_color = "Blue"
         elif self.good_color == "Blue":
             self.bad_color = "Red"
-        self.max_clue_num = 1
+        self.max_clue_num = 8
 
         # Potential codemaster clues
         self.cm_word_set = set([])
@@ -69,7 +69,7 @@ class MiniMaxCodemaster(Codemaster):
     def get_clue(self) -> Tuple[str, int]:
         """Function that returns a clue word and number of estimated related words on the board"""
         clue, num = self._min_max(max, 1, self.words_on_board, self.key_grid)
-        print("The " + self.good_color + " clue is " + clue)
+        print(f"The {self.good_color} clue is {clue} {num}")
         print("Old board + Expected new board")
         print(self.words_on_board)
         new_board = self._simulate_guesses(self.good_color, clue, num, self.words_on_board, self.key_grid)
