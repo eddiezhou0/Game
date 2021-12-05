@@ -298,7 +298,7 @@ class Game:
         if os.path.exists("results") and os.path.isdir("results"):
             shutil.rmtree("results")
 
-    def play_turn(self, words_in_play, color_game_condition, game_counter):
+    def play_turn(self, words_in_play, color_game_condition, game_counter, other_game_counter):
         # codemaster gives clue & number here
 
         if color_game_condition == GameCondition.HIT_RED:
@@ -346,17 +346,22 @@ class Game:
                 break
 
             elif game_condition == GameCondition.LOSS:
-                """
+
                 self.game_end_time = time.time()
                 game_counter = 25
                 self._display_board_codemaster()
                 if self.do_log:
                     self.write_results(game_counter)
-                print(teamcolor + " Lost")
-                print(teamcolor + " Counter:", game_counter)
+
+                if teamcolor == "Red":
+                    othercolor = "Blue"
+                else:
+                    othercolor = "Red"
+
+                print(othercolor + " Won")
+                print(othercolor + " Counter:", other_game_counter)
                 quit(1)
-                """
-                quit(1)
+
 
             elif game_condition == GameCondition.WIN:
                 self.game_end_time = time.time()
@@ -390,7 +395,7 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
-            red_count = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter)
+            red_count = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
             if red_count is not None:
                 red_game_counter = red_count
 
@@ -398,6 +403,6 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
-            blue_count = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter)
+            blue_count = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
             if blue_count is not None:
                 blue_game_counter = blue_count
