@@ -356,7 +356,7 @@ class Game:
                 print(teamcolor + " Counter:", game_counter)
                 quit(1)
                 """
-                return
+                quit(1)
 
             elif game_condition == GameCondition.WIN:
                 self.game_end_time = time.time()
