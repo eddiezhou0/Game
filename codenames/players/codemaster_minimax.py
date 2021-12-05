@@ -70,7 +70,7 @@ class MiniMaxCodemaster(Codemaster):
 
     def get_clue(self) -> Tuple[str, int]:
         """Function that returns a clue word and number of estimated related words on the board"""
-        clueNum, val = self._min_max(max, self.max_depth, self.words_on_board)
+        clueNum, val = self._min_max(max, self.good_color, self.max_depth, self.words_on_board)
         clue, num = clueNum
         print(f"The {self.good_color} clue is {clue} {num}")
         print("Old board + Expected new board")
@@ -79,11 +79,11 @@ class MiniMaxCodemaster(Codemaster):
         print(new_board)
         return (clue, num)
 
-    def _min_max(self, function, depth, words_on_board) -> Tuple[str, int]:
+    def _min_max(self, function, color, depth, words_on_board) -> Tuple[str, int]:
 
-        if depth == 0:
+        if depth == 0 or self._is_game_over(words_on_board):
             # TODO change self.good_color to actual last player
-            value = self._heuristicFunction(self.good_color, words_on_board)
+            value = self._heuristicFunction(self._other_color(color), words_on_board)
             return (None, value)
 
         # TODO prune word set for illegal clues
@@ -96,13 +96,14 @@ class MiniMaxCodemaster(Codemaster):
         for potentialClue in self.cm_word_set:
             if depth == 2:
                 progress_counter += 1
-                print(CURSOR_UP_ONE + ERASE_LINE)
+                #print(CURSOR_UP_ONE + ERASE_LINE)
                 print(f"{progress_counter}/{num_clues} : {progress_counter/num_clues * 100}%")
             for num in range(1, self.max_clue_num + 1):
-                new_words_on_board = self._simulate_guesses(self.good_color, potentialClue, num, words_on_board)
-                # TODO minimize
+                # TODO alpha-beta pruning
+                # TODO handle end-game states
+                new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
                 next_function = min if function is max else max
-                clueNum, value = self._min_max(next_function, depth-1, new_words_on_board)
+                _, value = self._min_max(next_function, self._other_color(color), depth-1, new_words_on_board)
                 clueOutcomes[(potentialClue, num)] = value
 
         return function(clueOutcomes.items(), key=operator.itemgetter(1))
@@ -114,6 +115,7 @@ class MiniMaxCodemaster(Codemaster):
         new_words_on_board = words_on_board.copy()
 
         # find and sort best words
+        # TODO cache the best words
         for word_index in range(len(words_on_board)):
             word = new_words_on_board[word_index]
             if word[0] == '*':
@@ -167,6 +169,33 @@ class MiniMaxCodemaster(Codemaster):
 
         return bad_remaining - good_remaining
 
+    def _is_game_over(self, words_on_board):
+        good_remaining = 0
+        bad_remaining = 0
+        neutral_remaining = 0
+        assasin_remaining = 0
+
+        for i in range(len(self.key_grid)):
+            # words on board that have already been identified will have been replaced with *<operatorName>*
+            # so the first character is '*'
+            if words_on_board[i][0] == '*':
+                continue
+            elif self.key_grid[i] == self.good_color:
+                good_remaining += 1
+            elif self.key_grid[i] == self.bad_color:
+                bad_remaining += 1
+            elif self.key_grid[i] == "Civilian":
+                neutral_remaining += 1
+            elif self.key_grid[i] == "Assassin":
+                assasin_remaining += 1
+            else:
+                # TODO should never get here, throw error
+                pass
+
+        return good_remaining == 0 or bad_remaining == 0 or assasin_remaining == 0
+
+    def _other_color(self, color):
+        return "Blue" if color == "Red" else "Red"
 
     def _hstack_word_vectors(self, word):
         """For word, stack all word embedding nd.array for each kind of word vector"""
