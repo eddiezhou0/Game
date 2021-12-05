@@ -3,6 +3,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 import numpy as np
 import scipy.spatial.distance
 import itertools
+import operator
 import heapq
 from typing import Tuple, List
 
@@ -35,7 +36,8 @@ class MiniMaxCodemaster(Codemaster):
             self.bad_color = "Blue"
         elif self.good_color == "Blue":
             self.bad_color = "Red"
-        self.max_clue_num = 8
+        self.max_clue_num = 1
+        self.max_depth = 1
 
         # Potential codemaster clues
         self.cm_word_set = set([])
@@ -68,27 +70,44 @@ class MiniMaxCodemaster(Codemaster):
 
     def get_clue(self) -> Tuple[str, int]:
         """Function that returns a clue word and number of estimated related words on the board"""
-        clue, num = self._min_max(max, 1, self.words_on_board, self.key_grid)
+        clueNum, val = self._min_max(max, self.max_depth, self.words_on_board)
+        clue, num = clueNum
         print(f"The {self.good_color} clue is {clue} {num}")
         print("Old board + Expected new board")
         print(self.words_on_board)
-        new_board = self._simulate_guesses(self.good_color, clue, num, self.words_on_board, self.key_grid)
+        new_board = self._simulate_guesses(self.good_color, clue, num, self.words_on_board)
         print(new_board)
         return (clue, num)
 
-    def _min_max(self, function, depth, words_on_board, key_grid) -> Tuple[str, int]:
+    def _min_max(self, function, depth, words_on_board) -> Tuple[str, int]:
+
+        if depth == 0:
+            # TODO change self.good_color to actual last player
+            value = self._heuristicFunction(self.good_color, words_on_board)
+            return (None, value)
+
         # TODO prune word set for illegal clues
+        if depth == 2:
+            CURSOR_UP_ONE = '\x1b[1A'
+            ERASE_LINE = '\x1b[2K'
+            num_clues = len(self.cm_word_set)
+            progress_counter = 0
         clueOutcomes = {}
         for potentialClue in self.cm_word_set:
-            for clueNum in range(1, self.max_clue_num + 1):
-                new_words_on_board = self._simulate_guesses(self.good_color, potentialClue, clueNum, words_on_board, key_grid)
+            if depth == 2:
+                progress_counter += 1
+                print(CURSOR_UP_ONE + ERASE_LINE)
+                print(f"{progress_counter}/{num_clues} : {progress_counter/num_clues * 100}%")
+            for num in range(1, self.max_clue_num + 1):
+                new_words_on_board = self._simulate_guesses(self.good_color, potentialClue, num, words_on_board)
                 # TODO minimize
-                value = self._heuristicFunction(self.good_color, new_words_on_board, key_grid)
-                clueOutcomes[(potentialClue, clueNum)] = value
+                next_function = min if function is max else max
+                clueNum, value = self._min_max(next_function, depth-1, new_words_on_board)
+                clueOutcomes[(potentialClue, num)] = value
 
-        return function(clueOutcomes, key=clueOutcomes.get)
+        return function(clueOutcomes.items(), key=operator.itemgetter(1))
 
-    def _simulate_guesses(self, guesser_color, clue, num, words_on_board, key_grid):
+    def _simulate_guesses(self, guesser_color, clue, num, words_on_board):
 
         # use heapq for priority queue
         best_words = []
@@ -105,14 +124,14 @@ class MiniMaxCodemaster(Codemaster):
         # try best words
         for i in range(num):
             _, word_index = heapq.heappop(best_words)
-            word_color = key_grid[word_index]
+            word_color = self.key_grid[word_index]
             new_words_on_board[word_index] = "*" + word_color + "*"
-            if key_grid[word_index] != guesser_color:
+            if self.key_grid[word_index] != guesser_color:
                 break
 
         return new_words_on_board
 
-    def _heuristicFunction(self, last_player_color, words_on_board, key_grid):
+    def _heuristicFunction(self, last_player_color, words_on_board):
         good_remaining = 0
         bad_remaining = 0
         neutral_remaining = 0
@@ -123,13 +142,13 @@ class MiniMaxCodemaster(Codemaster):
             # so the first character is '*'
             if words_on_board[i][0] == '*':
                 continue
-            elif key_grid[i] == self.good_color:
+            elif self.key_grid[i] == self.good_color:
                 good_remaining += 1
-            elif key_grid[i] == self.bad_color:
+            elif self.key_grid[i] == self.bad_color:
                 bad_remaining += 1
-            elif key_grid[i] == "Civilian":
+            elif self.key_grid[i] == "Civilian":
                 neutral_remaining += 1
-            elif key_grid[i] == "Assassin":
+            elif self.key_grid[i] == "Assassin":
                 assasin_remaining += 1
             else:
                 # TODO should never get here, throw error
