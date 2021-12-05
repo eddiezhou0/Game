@@ -32,12 +32,9 @@ class MiniMaxCodemaster(Codemaster):
         self.words_on_board = None
         self.key_grid = None
         self.good_color = kwargs['color']
-        if self.good_color == "Red":
-            self.bad_color = "Blue"
-        elif self.good_color == "Blue":
-            self.bad_color = "Red"
-        self.max_clue_num = 1
-        self.max_depth = 1
+        self.bad_color = self._other_color(self.good_color)
+        self.max_clue_num = 3
+        self.max_depth = 2
 
         # Potential codemaster clues
         self.cm_word_set = set([])
@@ -70,14 +67,65 @@ class MiniMaxCodemaster(Codemaster):
 
     def get_clue(self) -> Tuple[str, int]:
         """Function that returns a clue word and number of estimated related words on the board"""
-        clueNum, val = self._min_max(max, self.good_color, self.max_depth, self.words_on_board)
+        #clueNum, val = self._min_max(max, self.good_color, self.max_depth, self.words_on_board)
+        clueNum, val = self._min_max_ab(self.good_color, self.max_depth, self.words_on_board, float('-inf'), float('inf'))
         clue, num = clueNum
+
+        # Debugging values
         print(f"The {self.good_color} clue is {clue} {num}")
         print("Old board + Expected new board")
         print(self.words_on_board)
         new_board = self._simulate_guesses(self.good_color, clue, num, self.words_on_board)
         print(new_board)
+        print(self._is_game_over(new_board))
         return (clue, num)
+
+    def _min_max_ab(self, color, depth, words_on_board, a, b) -> Tuple[str, int]:
+
+        if depth == 0 or self._is_game_over(words_on_board):
+            # TODO change self.good_color to actual last player
+            value = self._heuristicFunction(self._other_color(color), words_on_board)
+            return (None, value)
+
+        # Progress indicator
+        if depth == self.max_depth:
+            num_clues = len(self.cm_word_set)
+            progress_counter = 0
+
+        best_clue = None
+        if color == self.good_color:
+            # maximize
+            value = float('-inf')
+            for potentialClue in self.cm_word_set:
+
+                if depth == self.max_depth:
+                    progress_counter += 1
+                    self.printProgressBar(progress_counter, num_clues, prefix = f'{color} Progress:', suffix = 'Complete', length = 50)
+
+                for num in range(1, self.max_clue_num + 1):
+                    new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
+                    _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
+                    if new_value > value:
+                        best_clue = (potentialClue, num)
+                        value = new_value
+                    if value >= b:
+                        return (best_clue, value)
+                    a = max(a, value)
+            return (best_clue, value)
+        else:
+            # minimize
+            value = float('inf')
+            for potentialClue in self.cm_word_set:
+                for num in range(1, self.max_clue_num + 1):
+                    new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
+                    _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
+                    if new_value < value:
+                        best_clue = (potentialClue, num)
+                        value = new_value
+                    if value <= a:
+                        return (best_clue, value)
+                    b = min(b, value)
+            return (best_clue, value)
 
     def _min_max(self, function, color, depth, words_on_board) -> Tuple[str, int]:
 
@@ -157,15 +205,15 @@ class MiniMaxCodemaster(Codemaster):
                 pass
 
         if good_remaining == 0:
-            return 10
+            return 10 + bad_remaining
 
         if bad_remaining == 0:
-            return -10
+            return -10 - good_remaining
 
         if assasin_remaining == 0 and last_player_color == self.good_color:
-            return -10
+            return -10 - good_remaining
         elif assasin_remaining == 0 and last_player_color == self.bad_color:
-            return 10
+            return 10 + bad_remaining
 
         return bad_remaining - good_remaining
 
@@ -206,3 +254,25 @@ class MiniMaxCodemaster(Codemaster):
             return stacked_words
         except KeyError:
             return None
+
+    # By @Greenstick https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
+    def printProgressBar (self, iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+        """
+        Call in a loop to create terminal progress bar
+        @params:
+            iteration   - Required  : current iteration (Int)
+            total       - Required  : total iterations (Int)
+            prefix      - Optional  : prefix string (Str)
+            suffix      - Optional  : suffix string (Str)
+            decimals    - Optional  : positive number of decimals in percent complete (Int)
+            length      - Optional  : character length of bar (Int)
+            fill        - Optional  : bar fill character (Str)
+            printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+        """
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filledLength = int(length * iteration // total)
+        bar = fill * filledLength + '-' * (length - filledLength)
+        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+        # Print New Line on Complete
+        if iteration == total: 
+            print()
