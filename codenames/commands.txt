@@ -1,0 +1,1 @@
+python run_game.py players.codemaster_minimax.MiniMaxCodemaster players.vector_guesser.VectorGuesser players.codemaster_minimax.MiniMaxCodemaster players.vector_guesser.VectorGuesser --glove players/glove.6B.100d.txt
