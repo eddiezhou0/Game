@@ -33,8 +33,8 @@ class MiniMaxCodemaster(Codemaster):
         self.key_grid = None
         self.good_color = kwargs['color']
         self.bad_color = self._other_color(self.good_color)
-        self.max_clue_num = 8
-        self.max_depth = 3
+        self.max_clue_num = 4
+        self.max_depth = 8
         self.call_cache = {}
 
         # Potential codemaster clues
@@ -107,7 +107,7 @@ class MiniMaxCodemaster(Codemaster):
 
                 num, new_words_on_board = self._simulate_guesses(color, potentialClue, self.max_clue_num, words_on_board)
 
-                call_cache_tuple = (self._other_color(color), a, b, depth-1, tuple(new_words_on_board))
+                call_cache_tuple = (self._other_color(color), depth-1, tuple(new_words_on_board))
                 if call_cache_tuple not in self.call_cache:
                     _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
                     self.call_cache[call_cache_tuple] = new_value
@@ -128,7 +128,7 @@ class MiniMaxCodemaster(Codemaster):
             for potentialClue in self.cm_word_set:
                 num, new_words_on_board = self._simulate_guesses(color, potentialClue, self.max_clue_num, words_on_board)
 
-                call_cache_tuple = (self._other_color(color), a, b, depth-1, tuple(new_words_on_board))
+                call_cache_tuple = (self._other_color(color), depth-1, tuple(new_words_on_board))
                 if call_cache_tuple not in self.call_cache:
                     _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
                     self.call_cache[call_cache_tuple] = new_value
