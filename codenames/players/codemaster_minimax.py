@@ -33,7 +33,7 @@ class MiniMaxCodemaster(Codemaster):
         self.key_grid = None
         self.good_color = kwargs['color']
         self.bad_color = self._other_color(self.good_color)
-        self.max_clue_num = 3
+        self.max_clue_num = 5
         self.max_depth = 2
 
         # Potential codemaster clues
@@ -78,12 +78,11 @@ class MiniMaxCodemaster(Codemaster):
         new_board = self._simulate_guesses(self.good_color, clue, num, self.words_on_board)
         print(new_board)
         print(self._is_game_over(new_board))
-        return (clue, num)
+        return clueNum
 
     def _min_max_ab(self, color, depth, words_on_board, a, b) -> Tuple[str, int]:
 
         if depth == 0 or self._is_game_over(words_on_board):
-            # TODO change self.good_color to actual last player
             value = self._heuristicFunction(self._other_color(color), words_on_board)
             return (None, value)
 
@@ -93,16 +92,19 @@ class MiniMaxCodemaster(Codemaster):
             progress_counter = 0
 
         best_clue = None
+        # only try nums < words remaining
+        max_num = min(self.max_clue_num, self._count_remaining(color, words_on_board))
         if color == self.good_color:
             # maximize
             value = float('-inf')
-            for potentialClue in self.cm_word_set:
+            for num in range(max_num, 0, -1):
+                for potentialClue in self.cm_word_set:
 
-                if depth == self.max_depth:
-                    progress_counter += 1
-                    self.printProgressBar(progress_counter, num_clues, prefix = f'{color} Progress:', suffix = 'Complete', length = 50)
+                    # progress bar
+                    if depth == self.max_depth:
+                        progress_counter += 1
+                        self.printProgressBar(progress_counter, num_clues * max_num, prefix = f'{color} Progress:', suffix = 'Complete', length = 50)
 
-                for num in range(1, self.max_clue_num + 1):
                     new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
                     _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
                     if new_value > value:
@@ -115,8 +117,8 @@ class MiniMaxCodemaster(Codemaster):
         else:
             # minimize
             value = float('inf')
-            for potentialClue in self.cm_word_set:
-                for num in range(1, self.max_clue_num + 1):
+            for num in range(max_num, 0, -1):
+                for potentialClue in self.cm_word_set:
                     new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
                     _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
                     if new_value < value:
@@ -130,7 +132,6 @@ class MiniMaxCodemaster(Codemaster):
     def _min_max(self, function, color, depth, words_on_board) -> Tuple[str, int]:
 
         if depth == 0 or self._is_game_over(words_on_board):
-            # TODO change self.good_color to actual last player
             value = self._heuristicFunction(self._other_color(color), words_on_board)
             return (None, value)
 
@@ -147,8 +148,6 @@ class MiniMaxCodemaster(Codemaster):
                 #print(CURSOR_UP_ONE + ERASE_LINE)
                 print(f"{progress_counter}/{num_clues} : {progress_counter/num_clues * 100}%")
             for num in range(1, self.max_clue_num + 1):
-                # TODO alpha-beta pruning
-                # TODO handle end-game states
                 new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
                 next_function = min if function is max else max
                 _, value = self._min_max(next_function, self._other_color(color), depth-1, new_words_on_board)
@@ -241,6 +240,17 @@ class MiniMaxCodemaster(Codemaster):
                 pass
 
         return good_remaining == 0 or bad_remaining == 0 or assasin_remaining == 0
+
+    def _count_remaining(self, color, words_on_board):
+        count = 0
+        for i in range(len(self.key_grid)):
+            # words on board that have already been identified will have been replaced with *<operatorName>*
+            # so the first character is '*'
+            if words_on_board[i][0] == '*':
+                continue
+            elif self.key_grid[i] == color:
+                count += 1
+        return count
 
     def _other_color(self, color):
         return "Blue" if color == "Red" else "Red"
