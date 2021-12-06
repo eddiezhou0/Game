@@ -33,7 +33,7 @@ class MiniMaxCodemaster(Codemaster):
         self.key_grid = None
         self.good_color = kwargs['color']
         self.bad_color = self._other_color(self.good_color)
-        self.max_clue_num = 5
+        self.max_clue_num = 8
         self.max_depth = 3
         self.call_cache = {}
 
@@ -76,7 +76,7 @@ class MiniMaxCodemaster(Codemaster):
         print(f"The {self.good_color} clue is {clue} {num}")
         print("Old board + Expected new board")
         print(self.words_on_board)
-        new_board = self._simulate_guesses(self.good_color, clue, num, self.words_on_board)
+        _, new_board = self._simulate_guesses(self.good_color, clue, num, self.words_on_board)
         print(new_board)
         print(self._is_game_over(new_board))
         return clueNum
@@ -98,49 +98,50 @@ class MiniMaxCodemaster(Codemaster):
         if color == self.good_color:
             # maximize
             value = float('-inf')
-            for num in range(max_num, 0, -1):
-                for potentialClue in self.cm_word_set:
+            for potentialClue in self.cm_word_set:
 
-                    # progress bar
-                    if depth == self.max_depth:
-                        progress_counter += 1
-                        self.printProgressBar(progress_counter, num_clues * max_num, prefix = f'{color} Progress:', suffix = f'Complete, Num: {num} Best Score: {value} A: {a} B: {b}', length = 50)
+                # progress bar
+                if depth == self.max_depth:
+                    progress_counter += 1
+                    self.printProgressBar(progress_counter, num_clues, prefix = f'{color} Progress:', suffix = f'Complete, Best Score: {value} A: {a} B: {b}', length = 50)
 
-                    new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
-                    if (self._other_color(color), tuple(new_words_on_board)) not in self.call_cache:
-                        _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
-                        self.call_cache[(self._other_color(color), tuple(new_words_on_board))] = new_value
-                    else:
-                        new_value = self.call_cache[(self._other_color(color), tuple(new_words_on_board))]
+                num, new_words_on_board = self._simulate_guesses(color, potentialClue, self.max_clue_num, words_on_board)
 
-                    if new_value > value:
-                        best_clue = (potentialClue, num)
-                        value = new_value
+                call_cache_tuple = (self._other_color(color), a, b, depth-1, tuple(new_words_on_board))
+                if call_cache_tuple not in self.call_cache:
+                    _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
+                    self.call_cache[call_cache_tuple] = new_value
+                else:
+                    new_value = self.call_cache[call_cache_tuple]
 
-                    if value >= b:
-                        return (best_clue, value)
-                    a = max(a, value)
+                if new_value > value:
+                    best_clue = (potentialClue, num)
+                    value = new_value
+
+                if value >= b:
+                    return (best_clue, value)
+                a = max(a, value)
             return (best_clue, value)
         else:
             # minimize
             value = float('inf')
-            for num in range(max_num, 0, -1):
-                for potentialClue in self.cm_word_set:
-                    new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
+            for potentialClue in self.cm_word_set:
+                num, new_words_on_board = self._simulate_guesses(color, potentialClue, self.max_clue_num, words_on_board)
 
-                    if (self._other_color(color), tuple(new_words_on_board)) not in self.call_cache:
-                        _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
-                        self.call_cache[(self._other_color(color), tuple(new_words_on_board))] = new_value
-                    else:
-                        new_value = self.call_cache[(self._other_color(color), tuple(new_words_on_board))]
-                        
-                    if new_value < value:
-                        best_clue = (potentialClue, num)
-                        value = new_value
+                call_cache_tuple = (self._other_color(color), a, b, depth-1, tuple(new_words_on_board))
+                if call_cache_tuple not in self.call_cache:
+                    _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)
+                    self.call_cache[call_cache_tuple] = new_value
+                else:
+                    new_value = self.call_cache[call_cache_tuple]
+                    
+                if new_value < value:
+                    best_clue = (potentialClue, num)
+                    value = new_value
 
-                    if value <= a:
-                        return (best_clue, value)
-                    b = min(b, value)
+                if value <= a:
+                    return (best_clue, value)
+                b = min(b, value)
             return (best_clue, value)
 
     def _min_max(self, function, color, depth, words_on_board) -> Tuple[str, int]:
@@ -188,11 +189,11 @@ class MiniMaxCodemaster(Codemaster):
         for i in range(num):
             _, word_index = heapq.heappop(best_words)
             word_color = self.key_grid[word_index]
-            new_words_on_board[word_index] = "*" + word_color + "*"
             if word_color != guesser_color:
-                break
+                return (i, new_words_on_board)
+            new_words_on_board[word_index] = "*" + word_color + "*"
 
-        return new_words_on_board
+        return (num, new_words_on_board)
 
     def _heuristicFunction(self, last_player_color, words_on_board):
         good_remaining = 0
