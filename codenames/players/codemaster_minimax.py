@@ -34,7 +34,7 @@ class MiniMaxCodemaster(Codemaster):
         self.good_color = kwargs['color']
         self.bad_color = self._other_color(self.good_color)
         self.max_clue_num = 5
-        self.max_depth = 2
+        self.max_depth = 1
 
         # Potential codemaster clues
         self.cm_word_set = set([])
@@ -103,7 +103,7 @@ class MiniMaxCodemaster(Codemaster):
                     # progress bar
                     if depth == self.max_depth:
                         progress_counter += 1
-                        self.printProgressBar(progress_counter, num_clues * max_num, prefix = f'{color} Progress:', suffix = 'Complete', length = 50)
+                        #self.printProgressBar(progress_counter, num_clues * max_num, prefix = f'{color} Progress:', suffix = 'Complete', length = 50)
 
                     new_words_on_board = self._simulate_guesses(color, potentialClue, num, words_on_board)
                     _, new_value = self._min_max_ab(self._other_color(color), depth-1, new_words_on_board, a, b)

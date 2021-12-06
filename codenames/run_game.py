@@ -146,7 +146,7 @@ if __name__ == "__main__":
             game_setup.bluecodemaster,
             game_setup.blueguesser,
             game_setup.pause,
-            seed=game_setup.seed,
+            seed=i,
             do_print=False,
             do_log=game_setup.do_log,
             game_name=game_setup.game_name,
