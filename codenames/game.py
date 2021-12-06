@@ -316,7 +316,7 @@ class Game:
         guess_num = 0
         clue_num = int(clue_num)
 
-        print('\n' * 2)
+        print('\n')
         guesser.set_clue(clue, clue_num)
 
         game_condition = color_game_condition
@@ -335,7 +335,7 @@ class Game:
                 game_condition = self._accept_guess_blue(guess_answer_index)
 
             if game_condition == color_game_condition:
-                print('\n' * 2)
+                print('\n')
                 self._display_board_codemaster()
                 guess_num += 1
                 print("Keep Guessing? the clue is ", clue, clue_num)
@@ -380,15 +380,14 @@ class Game:
         game_condition = GameCondition.HIT_RED
         red_game_counter = 0
         blue_game_counter = 0
+        words_in_play = self.get_words_on_board()
+        current_key_grid = self.get_key_grid()
+        self.bluecodemaster.set_game_state(words_in_play, current_key_grid)
         while game_condition != GameCondition.LOSS and game_condition != GameCondition.WIN:
 
             # board setup and display
-            print('\n' * 2)
-            words_in_play = self.get_words_on_board()
-            current_key_grid = self.get_key_grid()
             self.redcodemaster.set_game_state(words_in_play, current_key_grid)
-            self.bluecodemaster.set_game_state(words_in_play, current_key_grid)
-            self._display_key_grid()
+            print('\n')
             self._display_board_codemaster()
 
             if self.pause:
@@ -398,6 +397,9 @@ class Game:
             red_count = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
             if red_count is not None:
                 red_game_counter = red_count
+
+            self.bluecodemaster.set_game_state(words_in_play, current_key_grid)
+            self._display_board_codemaster()
 
             if self.pause:
                 print("Enter any key to continue")
