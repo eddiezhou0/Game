@@ -315,6 +315,7 @@ class Game:
         keep_guessing = True
         guess_num = 0
         clue_num = int(clue_num)
+        winner = None
 
         print('\n')
         guesser.set_clue(clue, clue_num)
@@ -360,7 +361,8 @@ class Game:
 
                 print(othercolor + " Won")
                 print(othercolor + " Counter:", other_game_counter)
-                quit(1)
+                winner = othercolor
+                break
 
 
             elif game_condition == GameCondition.WIN:
@@ -370,9 +372,10 @@ class Game:
                     self.write_results(game_counter)
                 print(teamcolor + " Won")
                 print(teamcolor + " Counter:", game_counter)
-                quit(0)
+                winner = teamcolor
+                break
 
-        return game_counter
+        return game_counter, winner
 
 
     def run(self):
@@ -394,7 +397,10 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
-            red_count = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
+            red_count, winner = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
+            if winner is not None:
+                return winner
+
             if red_count is not None:
                 red_game_counter = red_count
 
@@ -405,6 +411,10 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
-            blue_count = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
+            blue_count, winner = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
+            if winner is not None:
+                return winner
             if blue_count is not None:
                 blue_game_counter = blue_count
+
+

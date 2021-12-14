@@ -136,16 +136,23 @@ class GameRun:
 if __name__ == "__main__":
     game_setup = GameRun()
 
-    game = Game(game_setup.redcodemaster,
-                game_setup.redguesser,
-                game_setup.bluecodemaster,
-                game_setup.blueguesser,
-                game_setup.pause,
-                seed=game_setup.seed,
-                do_print=game_setup.do_print,
-                do_log=game_setup.do_log,
-                game_name=game_setup.game_name,
-                cm_kwargs=game_setup.cm_kwargs,
-                g_kwargs=game_setup.g_kwargs)
+    wins = { "Red": 0,
+             "Blue": 0}
 
-    game.run()
+    for i in range(0, 10):
+        print(f"running game {i}")
+        game = Game(game_setup.redcodemaster,
+            game_setup.redguesser,
+            game_setup.bluecodemaster,
+            game_setup.blueguesser,
+            game_setup.pause,
+            seed=i,
+            do_print=False,
+            do_log=game_setup.do_log,
+            game_name=game_setup.game_name,
+            cm_kwargs=game_setup.cm_kwargs,
+            g_kwargs=game_setup.g_kwargs)
+
+        wins[game.run()] += 1
+
+    print(wins)

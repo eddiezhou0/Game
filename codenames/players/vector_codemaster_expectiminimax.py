@@ -177,6 +177,7 @@ class ExpectiMiniMaxCodemaster(Codemaster):
         clueProbs = {}
         potentialClueNums = []
         potentialClues = []
+
         for clueNum in clueOutcomes:
             potentialClueNums.append(clueNum)
             potentialClues.append(clueNum[0])
