@@ -33,8 +33,8 @@ class MiniMaxCodemaster(Codemaster):
         self.key_grid = None
         self.good_color = kwargs['color']
         self.bad_color = self._other_color(self.good_color)
-        self.max_clue_num = 4
-        self.max_depth = 8
+        self.max_clue_num = 5
+        self.max_depth = 3
         self.call_cache = {}
 
         # Potential codemaster clues

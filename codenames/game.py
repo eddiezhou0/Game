@@ -399,7 +399,7 @@ class Game:
 
             red_count, winner = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
             if winner is not None:
-                return winner
+                return winner, red_count
 
             if red_count is not None:
                 red_game_counter = red_count
@@ -413,7 +413,7 @@ class Game:
 
             blue_count, winner = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
             if winner is not None:
-                return winner
+                return winner, blue_count
             if blue_count is not None:
                 blue_game_counter = blue_count
 

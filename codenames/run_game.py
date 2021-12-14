@@ -136,10 +136,10 @@ class GameRun:
 if __name__ == "__main__":
     game_setup = GameRun()
 
-    wins = { "Red": 0,
-             "Blue": 0}
+    wins = { "Red": [],
+             "Blue": []}
 
-    for i in range(0, 10):
+    for i in range(0, 50):
         print(f"running game {i}")
         game = Game(game_setup.redcodemaster,
             game_setup.redguesser,
@@ -153,6 +153,8 @@ if __name__ == "__main__":
             cm_kwargs=game_setup.cm_kwargs,
             g_kwargs=game_setup.g_kwargs)
 
-        wins[game.run()] += 1
+        winner, counter = game.run()
+        wins[winner].append(counter)
 
-    print(wins)
+    print(f"Red won {len(wins['Red'])} with average counter of {sum(wins['Red'])/len(wins['Red'])}")
+    #print(f"Blue won {len(wins['Blue'])} with average counter of {sum(wins['Blue'])/len(wins['Blue'])}")
