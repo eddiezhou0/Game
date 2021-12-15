@@ -74,7 +74,7 @@ class VectorCodemaster(Codemaster):
         """Create word-distance dictionaries for both red words and bad words"""
         self.word_distances = {}
         for word in self.words_on_board:
-            print("Calculating distance for " + word)
+            #print("Calculating distance for " + word)
             self.word_distances[word] = {}
             word_stacked = self._hstack_word_vectors(word.lower())
             for potentialClue in self.cm_word_set:

@@ -56,7 +56,7 @@ class MiniMaxCodemaster(Codemaster):
         """Create word-distance dictionaries for both red words and bad words"""
         self.word_distances = {}
         for word in self.words_on_board:
-            print("Calculating distance for " + word)
+            #print("Calculating distance for " + word)
             self.word_distances[word] = {}
             word_stacked = self._hstack_word_vectors(word.lower())
             for potentialClue in self.cm_word_set:
@@ -103,7 +103,7 @@ class MiniMaxCodemaster(Codemaster):
                 # progress bar
                 if depth == self.max_depth:
                     progress_counter += 1
-                    self.printProgressBar(progress_counter, num_clues, prefix = f'{color} Progress:', suffix = f'Complete, Best Score: {value} A: {a} B: {b}', length = 50)
+                    #self.printProgressBar(progress_counter, num_clues, prefix = f'{color} Progress:', suffix = f'Complete, Best Score: {value} A: {a} B: {b}', length = 50)
 
                 num, new_words_on_board = self._simulate_guesses(color, potentialClue, self.max_clue_num, words_on_board)
 

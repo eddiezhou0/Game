@@ -154,7 +154,10 @@ if __name__ == "__main__":
             g_kwargs=game_setup.g_kwargs)
 
         winner, counter = game.run()
-        wins[winner].append(counter)
+        if counter != 25:
+            wins[winner].append(counter)
+        print(wins)
 
     print(f"Red won {len(wins['Red'])} with average counter of {sum(wins['Red'])/len(wins['Red'])}")
-    #print(f"Blue won {len(wins['Blue'])} with average counter of {sum(wins['Blue'])/len(wins['Blue'])}")
+    if len(wins['Blue']):
+        print(f"Blue won {len(wins['Blue'])} with average counter of {sum(wins['Blue'])/len(wins['Blue'])}")

@@ -312,6 +312,7 @@ class Game:
 
         clue, clue_num = codemaster.get_clue()
         game_counter += 1
+        winner_counter = 0
         keep_guessing = True
         guess_num = 0
         clue_num = int(clue_num)
@@ -362,6 +363,7 @@ class Game:
                 print(othercolor + " Won")
                 print(othercolor + " Counter:", other_game_counter)
                 winner = othercolor
+                winner_counter = other_game_counter
                 break
 
 
@@ -373,9 +375,10 @@ class Game:
                 print(teamcolor + " Won")
                 print(teamcolor + " Counter:", game_counter)
                 winner = teamcolor
+                winner_counter = game_counter
                 break
 
-        return game_counter, winner
+        return game_counter, winner, winner_counter
 
 
     def run(self):
@@ -397,9 +400,9 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
-            red_count, winner = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
+            red_count, winner, winner_counter = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
             if winner is not None:
-                return winner, red_count
+                return winner, winner_counter
 
             if red_count is not None:
                 red_game_counter = red_count
@@ -411,9 +414,9 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
-            blue_count, winner = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
+            blue_count, winner, winner_counter = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
             if winner is not None:
-                return winner, blue_count
+                return winner, winner_counter
             if blue_count is not None:
                 blue_game_counter = blue_count
 
