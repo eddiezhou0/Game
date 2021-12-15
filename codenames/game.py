@@ -213,7 +213,7 @@ class Game:
 
         elif self.key_grid[guess_index] == "Assassin":
             self.words_on_board[guess_index] = "*Assassin*"
-            return GameCondition.LOSS
+            return GameCondition.HIT_ASSASSIN
 
         else:
             self.words_on_board[guess_index] = "*Civilian*"
@@ -238,7 +238,7 @@ class Game:
 
         elif self.key_grid[guess_index] == "Assassin":
             self.words_on_board[guess_index] = "*Assassin*"
-            return GameCondition.LOSS
+            return GameCondition.HIT_ASSASSIN
 
         else:
             self.words_on_board[guess_index] = "*Civilian*"
@@ -378,6 +378,25 @@ class Game:
                 winner_counter = game_counter
                 break
 
+            elif game_condition == GameCondition.HIT_ASSASSIN:
+
+                self.game_end_time = time.time()
+                game_counter = 25
+                self._display_board_codemaster()
+                if self.do_log:
+                    self.write_results(game_counter)
+
+                if teamcolor == "Red":
+                    othercolor = "Blue"
+                else:
+                    othercolor = "Red"
+
+                print(othercolor + " Won")
+                print(othercolor + " Counter:", other_game_counter)
+                winner = othercolor
+                winner_counter = 25
+                break
+
         return game_counter, winner, winner_counter
 
 
@@ -389,7 +408,9 @@ class Game:
         words_in_play = self.get_words_on_board()
         current_key_grid = self.get_key_grid()
         self.bluecodemaster.set_game_state(words_in_play, current_key_grid)
-        while game_condition != GameCondition.LOSS and game_condition != GameCondition.WIN:
+        turn_times = []
+
+        while game_condition != GameCondition.LOSS and game_condition != GameCondition.WIN and game_condition != GameCondition.HIT_ASSASSIN:
 
             # board setup and display
             self.redcodemaster.set_game_state(words_in_play, current_key_grid)
@@ -400,8 +421,13 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
+            start = time.perf_counter()
             red_count, winner, winner_counter = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
+            end = time.perf_counter()
+            turn_times.append(end-start)
+
             if winner is not None:
+                print(f"Moving turn time average: {sum(turn_times)/len(turn_times)}s")
                 return winner, winner_counter
 
             if red_count is not None:
@@ -414,8 +440,13 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
+            start = time.perf_counter()
             blue_count, winner, winner_counter = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
+            end = time.perf_counter()
+            turn_times.append(end-start)
+
             if winner is not None:
+                print(f"Moving turn time average: {sum(turn_times)/len(turn_times)}s")
                 return winner, winner_counter
             if blue_count is not None:
                 blue_game_counter = blue_count
