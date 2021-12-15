@@ -139,7 +139,7 @@ if __name__ == "__main__":
     wins = { "Red": [],
              "Blue": []}
     i = 1
-    while len(wins['Red']) + len(wins['Blue']) < 50:
+    while len(wins['Red']) + len(wins['Blue']) < 10:
         print(f"running game {i}")
         game = Game(game_setup.redcodemaster,
             game_setup.redguesser,

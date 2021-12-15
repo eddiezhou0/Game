@@ -408,6 +408,8 @@ class Game:
         words_in_play = self.get_words_on_board()
         current_key_grid = self.get_key_grid()
         self.bluecodemaster.set_game_state(words_in_play, current_key_grid)
+        turn_times = []
+
         while game_condition != GameCondition.LOSS and game_condition != GameCondition.WIN and game_condition != GameCondition.HIT_ASSASSIN:
 
             # board setup and display
@@ -419,8 +421,13 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
+            start = time.perf_counter()
             red_count, winner, winner_counter = self.play_turn(words_in_play, GameCondition.HIT_RED, red_game_counter, blue_game_counter)
+            end = time.perf_counter()
+            turn_times.append(end-start)
+
             if winner is not None:
+                print(f"Moving turn time average: {sum(turn_times)/len(turn_times)}s")
                 return winner, winner_counter
 
             if red_count is not None:
@@ -433,8 +440,13 @@ class Game:
                 print("Enter any key to continue")
                 something = input()
 
+            start = time.perf_counter()
             blue_count, winner, winner_counter = self.play_turn(words_in_play, GameCondition.HIT_BLUE, blue_game_counter, red_game_counter)
+            end = time.perf_counter()
+            turn_times.append(end-start)
+
             if winner is not None:
+                print(f"Moving turn time average: {sum(turn_times)/len(turn_times)}s")
                 return winner, winner_counter
             if blue_count is not None:
                 blue_game_counter = blue_count
