@@ -138,8 +138,8 @@ if __name__ == "__main__":
 
     wins = { "Red": [],
              "Blue": []}
-
-    for i in range(0, 50):
+    i = 1
+    while len(wins['Red']) + len(wins['Blue']) < 50:
         print(f"running game {i}")
         game = Game(game_setup.redcodemaster,
             game_setup.redguesser,
@@ -157,6 +157,7 @@ if __name__ == "__main__":
         if counter != 25:
             wins[winner].append(counter)
         print(wins)
+        i += 1
 
     print(f"Red won {len(wins['Red'])} with average counter of {sum(wins['Red'])/len(wins['Red'])}")
     if len(wins['Blue']):
